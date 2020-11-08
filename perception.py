@@ -15,19 +15,19 @@ if device_status:
 
 #initialize model
 net=nn.Sequential(
-	nn.Linear(30,2)
+	nn.Linear(60,2)
 )
 if device_status:
 	net=net.to(device_id)
 
 #set hyperparameters
 loss_func=nn.CrossEntropyLoss()
-opt=torch.optim.Adam(net.parameters(),lr=0.001)
-mini_batch=2
+opt=torch.optim.Adam(net.parameters(),lr=0.0007)
+mini_batch=1
 
 #load dataset
-trainData=TrainData('wdbc','./datasets/wdbc_binary/wdbc.data')
-testData=TestData('wdbc','./datasets/wdbc_binary/wdbc.data')
+trainData=TrainData('sonar','./datasets/sonar_binary/sonar.all-data')
+testData=TestData('sonar','./datasets/sonar_binary/sonar.all-data')
 
 trainLoader=DataLoader(
 	dataset=trainData,
@@ -45,7 +45,7 @@ testLoader=DataLoader(
 if __name__=='__main__':
 
 	#train & test
-	for epoch in range(51):
+	for epoch in range(100):
 		net=net.train()
 		for _,(x,y) in enumerate(trainLoader):
 			if device_status:
@@ -60,8 +60,8 @@ if __name__=='__main__':
 			loss.backward()
 			opt.step()
 
-		if epoch%10!=0:
-			continue
+		# if epoch%10!=0:
+		# 	continue
 
 		net=net.eval()
 		positive_n=0
@@ -79,7 +79,6 @@ if __name__=='__main__':
 					positive_n+=1
 
 		print('epoch = %d	accuracy = %f' %(epoch,positive_n/testData.__len__()))
-
 
 	#save parameters
 	torch.save(net.state_dict(),'./results/perception.pkl')

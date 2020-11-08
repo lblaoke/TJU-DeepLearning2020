@@ -15,13 +15,13 @@ if device_status:
 
 #initialize model
 net=nn.Sequential(
-	nn.Linear(24,32),
+	nn.Linear(35,32),
 	nn.ELU(),
 	nn.Linear(32,32),
 	nn.ELU(),
 	nn.Linear(32,32),
 	nn.ELU(),
-	nn.Linear(32,4)
+	nn.Linear(32,19)
 )
 if device_status:
 	net=net.to(device_id)
@@ -29,11 +29,11 @@ if device_status:
 #set hyperparameters
 loss_func=nn.CrossEntropyLoss()
 opt=torch.optim.Adam(net.parameters(),lr=0.001)
-mini_batch=8
+mini_batch=4
 
 #load dataset
-trainData=TrainData('robot','./datasets/robot_multi/sensor_readings_24.data')
-testData=TestData('robot','./datasets/robot_multi/sensor_readings_24.data')
+trainData=TrainData('soybean','./datasets/soybean_multi/soybean-large.data')
+testData=TestData('soybean','./datasets/soybean_multi/soybean-large.data')
 
 trainLoader=DataLoader(
 	dataset=trainData,
@@ -66,8 +66,8 @@ if __name__=='__main__':
 			loss.backward()
 			opt.step()
 
-		if epoch%10!=0:
-			continue
+		# if epoch%10!=0:
+		# 	continue
 
 		net=net.eval()
 		positive_n=0
@@ -86,6 +86,5 @@ if __name__=='__main__':
 
 		print('epoch = %d	accuracy = %f' %(epoch,positive_n/testData.__len__()))
 
-
 	#save parameters
-	torch.save(net.state_dict(),'./results/perception.pkl')
+	torch.save(net.state_dict(),'./results/fnn.pkl')

@@ -1,6 +1,8 @@
 from torch.utils.data import Dataset
 import numpy as np
 import torch
+from os.path import join
+from struct import unpack
 
 class TrainData(Dataset):
 	def __init__(self,data_name,file_path):
@@ -77,7 +79,7 @@ class TestData(Dataset):
 	        label = [0 if dataset[i][-1]=='R' else 1 for i in range(len(dataset))]
 	        
 	        val_feature = np.array([feature[i]  for i in range(len(feature)) if i % 3 == 0],dtype=np.float32)
-	        val_label = np.array([label[i]  for i in range(len(label)) if i % 3 == 0],dtype=int64)
+	        val_label = np.array([label[i]  for i in range(len(label)) if i % 3 == 0],dtype=np.int64)
 
 	    elif data_name == "wdbc":
 	        dataset = np.loadtxt(file_path, dtype=str, skiprows=0, delimiter=',')
@@ -133,3 +135,28 @@ class TestData(Dataset):
 
 	def __len__(self):
 		return self.y.size(0)
+
+class MnistDataset(Dataset):
+    def __init__(self,path,kind):
+
+        #generate full path
+        labels_path=join(path,'%s-labels.idx1-ubyte' % kind)
+        images_path=join(path,'%s-images.idx3-ubyte' % kind)
+
+        #open files and read
+        with open(labels_path,'rb') as lbpath:
+            magic,n=unpack('>II',lbpath.read(8))
+            y=np.fromfile(lbpath,dtype=np.uint8)
+        with open(images_path,'rb') as imgpath:
+            magic,num,rows,cols=unpack('>IIII',imgpath.read(16))
+            X=np.fromfile(imgpath,dtype=np.uint8).reshape(len(y),1,28,28)
+
+        #convert all to tensors
+        self.X=torch.from_numpy(X.astype(np.float32))
+        self.y=torch.from_numpy(y.astype(np.int64))
+
+    def __getitem__(self,index):
+        return self.X[index],self.y[index]
+
+    def __len__(self):
+        return self.y.size(0)
