@@ -8,10 +8,7 @@ from torch.utils.data import DataLoader
 #test device status
 device_status=torch.cuda.is_available()
 if device_status:
-	try:
-		device_id=free_device_id(argv[1])
-	except:
-		device_id=0
+	device_id=0
 
 #initialize model
 net=nn.Sequential(

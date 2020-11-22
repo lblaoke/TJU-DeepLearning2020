@@ -137,26 +137,34 @@ class TestData(Dataset):
 		return self.y.size(0)
 
 class MnistDataset(Dataset):
-    def __init__(self,path,kind):
+	def __init__(self,path,kind):
+		assert kind=='train' or kind=='t10k','Unsupported kind '+kind
 
-        #generate full path
-        labels_path=join(path,'%s-labels.idx1-ubyte' % kind)
-        images_path=join(path,'%s-images.idx3-ubyte' % kind)
+		#generate full path
+		labels_path = join(path,'%s-labels.idx1-ubyte' % kind)
+		images_path = join(path,'%s-images.idx3-ubyte' % kind)
 
-        #open files and read
-        with open(labels_path,'rb') as lbpath:
-            magic,n=unpack('>II',lbpath.read(8))
-            y=np.fromfile(lbpath,dtype=np.uint8)
-        with open(images_path,'rb') as imgpath:
-            magic,num,rows,cols=unpack('>IIII',imgpath.read(16))
-            X=np.fromfile(imgpath,dtype=np.uint8).reshape(len(y),1,28,28)
+		#open files and read
+		with open(labels_path,'rb') as lbpath:
+			magic,n = unpack('>II',lbpath.read(8))
+			y = np.fromfile(lbpath,dtype=np.uint8)
+		with open(images_path,'rb') as imgpath:
+			magic,num,rows,cols = unpack('>IIII',imgpath.read(16))
+			X = np.fromfile(imgpath,dtype=np.uint8).reshape(len(y),1,28,28)
 
-        #convert all to tensors
-        self.X=torch.from_numpy(X.astype(np.float32))
-        self.y=torch.from_numpy(y.astype(np.int64))
+		if kind=='train':
+			assert X.shape==(60000,1,28,28),'Data missed partially, expect (60000,1,28,28), but got '+str(X.shape)+' instead'
+			assert y.shape==(60000,),'Data missed partially, expect (60000,), but got '+str(y.shape)+' instead'
+		else:
+			assert X.shape==(10000,1,28,28),'Data missed partially, expect (10000,1,28,28), but got '+str(X.shape)+' instead'
+			assert y.shape==(10000,),'Data missed partially, expect (10000,), but got '+str(y.shape)+' instead'
 
-    def __getitem__(self,index):
-        return self.X[index],self.y[index]
+		#convert all to tensors
+		self.X = torch.from_numpy(X.astype(np.float32))
+		self.y = torch.from_numpy(y.astype(np.int64))
 
-    def __len__(self):
-        return self.y.size(0)
+	def __getitem__(self,index):
+		return self.X[index],self.y[index]
+
+	def __len__(self):
+		return self.y.size(0)
