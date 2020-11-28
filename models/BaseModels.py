@@ -25,11 +25,11 @@ class Conv2dSame(nn.Module):
 		return y
 
 #Conv2dSame+ReLU+BatchNorm2d
-class Conv2dSame_ReLU_BN(nn.Module):
+class Conv2dSame_BN_ReLU(nn.Module):
 	def __init__(self,in_channels,out_channels,kernel_size):
 		assert type(kernel_size)==int,'Unsupported type '+str(type(kernel_size))+' for kernel_size'
 
-		super(Conv2dSame_ReLU_BN,self).__init__()
+		super(Conv2dSame_BN_ReLU,self).__init__()
 
 		bound = kernel_size-1
 		bound_l = bound//2
@@ -46,6 +46,5 @@ class Conv2dSame_ReLU_BN(nn.Module):
 	def forward(self,x):
 		x = self.padding(x)
 		x = self.conv(x)
-		x = F.relu(x)
-		y = self.bn(x)
-		return y
+		x = self.bn(x)
+		return F.relu(x)
