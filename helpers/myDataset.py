@@ -3,6 +3,7 @@ import numpy as np
 import torch
 from os.path import join
 from struct import unpack
+from scipy.io import loadmat
 
 class TrainData(Dataset):
 	def __init__(self,data_name,file_path):
@@ -158,6 +159,36 @@ class MnistDataset(Dataset):
 		else:
 			assert X.shape==(10000,1,28,28),'Data missed partially, expect (10000,1,28,28), but got '+str(X.shape)+' instead'
 			assert y.shape==(10000,),'Data missed partially, expect (10000,), but got '+str(y.shape)+' instead'
+
+		#convert all to tensors
+		self.X = torch.from_numpy(X.astype(np.float32))
+		self.y = torch.from_numpy(y.astype(np.int64))
+
+	def __getitem__(self,index):
+		return self.X[index],self.y[index]
+
+	def __len__(self):
+		return self.y.size(0)
+
+class Svhn2Dataset(Dataset):
+	def __init__(self,path,kind):
+		if kind=='train':
+			data = loadmat(join(path,'train_32x32.mat'))
+			X = data['X'].transpose((3,2,0,1))
+			y = data['y'].reshape(73257)
+
+			assert X.shape==(73257,3,32,32),'Data missed partially, expect (73257,3,32,32), but got '+str(X.shape)+' instead'
+			assert y.shape==(73257,),'Data missed partially, expect (73257,), but got '+str(y.shape)+' instead'
+		else:
+			data = loadmat(join(path,'test_32x32.mat'))
+			X = data['X'].transpose((3,2,0,1))
+			y = data['y'].reshape(26032)
+
+			assert X.shape==(26032,3,32,32),'Data missed partially, expect (26032,3,32,32), but got '+str(X.shape)+' instead'
+			assert y.shape==(26032,),'Data missed partially, expect (26032,), but got '+str(y.shape)+' instead'
+
+		#let label "10" be "0"
+		y = np.where(y==10,0,y)
 
 		#convert all to tensors
 		self.X = torch.from_numpy(X.astype(np.float32))
